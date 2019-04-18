@@ -7,8 +7,13 @@
         <div class="article-metadata">
 
         </div>
-        <a href="{% url 'quiz-detail' quiz.pk %}"><h2 class="article-title outline-info">{{ quiz.title }}</h2></a>
-        <p class="article-content">{{ quiz.starttime}}</p>
+        {% if user.is_superuser %}
+            <a href="{% url 'quiz-detail' quiz.pk %}"><h2 class="article-title outline-info">{{ quiz.title }}</h2></a>
+        {% else %}
+            <a href="{% url 'take-quiz' quiz.pk %}"><h2 class="article-title outline-info">{{ quiz.title }}</h2></a>
+        {% endif %}
+        <p class="article-content">{{ quiz.date }}; {{ quiz.start_time}}</p>
+
     </div>
 </article>
 {% endfor %}

@@ -17,10 +17,15 @@
     </div>
 </article>
 <a class="btn btn-outline-info mb-4" href="{% url 'question-create' pk=object.pk%}">Add Question</a>
+<article class="content-section">
+    <div class="media-body">
+        <p class="article-title" style="font-size: x-large; color: darkblue">Question Count ==> {{ object.question_set.count }}</p>
+    </div>
+</article>
 {% for question in questions %}
 <article class="media content-section">
     <div class="media-body">
-        <a class="list-item list-item-link" href="{% url 'question-detail' question_pk=question.pk quiz_pk=question.quiz.pk %}">{{ question.text }}</a>
+        <a class="list-item list-item-link" href="{% url 'question-detail' question_pk=question.pk quiz_pk=question.quiz.pk %}">{{ forloop.counter }}. {{ question.text }}</a>
     </div>
 </article>
 {% endfor %}

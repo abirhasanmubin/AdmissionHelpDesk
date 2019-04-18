@@ -2,7 +2,7 @@ from django.db import models
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.urls import reverse, reverse_lazy
-
+from django.utils.timezone import now
 
 # Create your models here.
 
@@ -16,8 +16,9 @@ class Quiz(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=1000)
     description = models.TextField(default="")
-    starttime = models.DateTimeField(default=time_now())
-    duration = models.TimeField(default=timedelta(hours=2))
+    date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
 
     def __str__(self):
         return self.title
@@ -48,26 +49,31 @@ class Answer(models.Model):
     def get_absolute_url(self):
         return reverse('question-detail', kwargs={'pk': self.question.pk})
 
+
+
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     quizes = models.ManyToManyField(Quiz, through='TakenQuiz')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def get_unanswered_questions(self, quiz):
         answered_questions = self.quiz_answers \
             .filter(answer__question__quiz=quiz) \
             .values_list('answer__question__pk', flat=True)
-        questions = quiz.questions.exclude(pk__in=answered_questions).order_by('text')
+        questions = quiz.question_set.exclude(pk__in=answered_questions).order_by('text')
         return questions
 
     def __str__(self):
         return self.user.username
-
 
 class TakenQuiz(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='taken_quizes')
     user = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='taken_quizes')
     score = models.IntegerField()
 
-class QuizAnswer(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quiz_answers')
+
+class StudentAnswer(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='quiz_answers')
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='+')

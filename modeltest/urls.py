@@ -5,7 +5,9 @@ from .views import (
     QuestionCreateView, QuestionUpdateView, QuestionDetailView,
     QuestionListView, QuestionDeleteView,
     AnswerCreateView, AnswerDetailView,
-    AnswerDeleteView, AnswerUpdateView
+    AnswerDeleteView, AnswerUpdateView,
+
+    TakenQuizListView,
 )
 import modeltest.views as mt_view
 
@@ -28,4 +30,6 @@ urlpatterns = [
     path('quiz/answer/<int:pk>/delete/', AnswerDeleteView.as_view(), name='answer-delete'),
     # path('quiz/<int:quiz_pk>/question/<int:question_pk)>/', mt_view.Question_Change, name='question-change')
 
+    path('student/quiz/<int:pk>/', mt_view.take_quiz, name='take-quiz'),
+    path('student/<int:pk>/quiz/', TakenQuizListView.as_view(), name='taken-quiz')
 ]

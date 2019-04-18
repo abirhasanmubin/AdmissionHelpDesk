@@ -1,4 +1,4 @@
-from django.core.checks import messages
+from django.contrib import messages
 from django.forms import inlineformset_factory
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
@@ -17,10 +17,11 @@ from django.views.generic import (
 from django.views.generic.edit import FormMixin
 from django.db import transaction
 from django.db.models import Avg, Count
-from .forms import QuestionForm, TakeQuizForm, BaseAnswerInlineFormSet
+from .forms import QuestionForm, TakeQuizForm, BaseAnswerInlineFormSet, QuizCreateForm
 
-from .models import Quiz, TakenQuiz, Question, Answer, QuizAnswer, Student
+from .models import Quiz, TakenQuiz, Question, Answer, StudentAnswer, Student
 # Create your views here.
+
 
 class QuizListView(LoginRequiredMixin, ListView):
     model = Quiz
@@ -46,7 +47,7 @@ class QuizDetailView(LoginRequiredMixin, DetailView):
 
 class QuizCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Quiz
-    fields = ['title', 'description', 'starttime', 'duration']
+    form_class = QuizCreateForm
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -165,6 +166,7 @@ class AnswerUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class AnswerDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Answer
 
+
     def test_func(self):
         if self.request.user.is_superuser:
             return True
@@ -191,9 +193,9 @@ def Question_Change(request, quiz_pk, question_pk):
         Answer,  # base model
         formset=BaseAnswerInlineFormSet,
         fields=('text', 'is_correct'),
-        min_num=2,
+        min_num=4,
         validate_min=True,
-        max_num=10,
+        max_num=5,
         validate_max=True
     )
 
@@ -205,7 +207,7 @@ def Question_Change(request, quiz_pk, question_pk):
                 form.save()
                 formset.save()
             messages.success(request, 'Question and answers saved with success!')
-            return redirect('teachers:quiz_change', quiz.pk)
+            return redirect('question-detail', question_pk=question.pk, quiz_pk=quiz.pk)
     else:
         form = QuestionForm(instance=question)
         formset = AnswerFormSet(instance=question)
@@ -215,4 +217,57 @@ def Question_Change(request, quiz_pk, question_pk):
         'question': question,
         'form': form,
         'formset': formset
+    })
+
+
+class TakenQuizListView(ListView):
+    model = TakenQuiz
+    context_object_name = 'taken_quizes'
+    template_name = 'modeltest/taken_quiz.html'
+
+    def get_queryset(self):
+        queryset = self.request.user.student.taken_quizes.all()
+        return queryset
+
+
+def take_quiz(request, pk):
+    quiz = get_object_or_404(Quiz, pk=pk)
+    student = request.user.student
+
+    if student.quizes.filter(pk=pk).exists():
+        return render(request, 'modeltest/taken_quiz.html')
+
+    total_questions = quiz.question_set.count()
+    unanswered_questions = student.get_unanswered_questions(quiz)
+    total_unanswered_questions = unanswered_questions.count()
+    progress = 100 - round(((total_unanswered_questions - 1) / total_questions) * 100)
+    question = unanswered_questions.first()
+
+    if request.method == 'POST':
+        form = TakeQuizForm(question=question, data=request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                quiz_answer = form.save(commit=False)
+                quiz_answer.student = student
+                quiz_answer.save()
+                if student.get_unanswered_questions(quiz).exists():
+                    return redirect('take-quiz', pk)
+                else:
+                    correct_answers = student.quiz_answers.filter(answer__question__quiz=quiz, answer__is_correct=True).count()
+                    score = round((correct_answers / total_questions) * 100.0, 2)
+                    # score = correct_answers
+                    TakenQuiz.objects.create(user=student, quiz=quiz, score=score)
+                    if score < 40.0:
+                        messages.warning(request, 'Better luck next time! Your score for the quiz %s was %s.' % (quiz.title, score))
+                    else:
+                        messages.success(request, 'Congratulations! You completed the quiz %s with success! You scored %s points.' % (quiz.title, score))
+                    return redirect('quiz-list')
+    else:
+        form = TakeQuizForm(question=question)
+
+    return render(request, 'modeltest/taken_quiz_form.html', {
+        'quiz': quiz,
+        'question': question,
+        'form': form,
+        'progress': progress
     })
