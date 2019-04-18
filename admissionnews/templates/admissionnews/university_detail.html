@@ -1,0 +1,29 @@
+{% extends "home/base.html" %}
+{% block content %}
+<article class="media content-section">
+    <img class="rounded-circle article-img" src="{{ object.logo.url }}">
+    <div class="media-body">
+        <div class="article-metadata">
+            <a class="mr-2" href="#">{{ object.university_type }}</a>
+            {% if object.user == user %}
+            <div>
+                <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'university-update' object.id %}">Update</a>
+                <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'university-delete' object.id %}">Delete</a>
+            </div>
+            {% endif %}
+        </div>
+        <h2 class="article-title">{{ object.name }}</h2>
+        <p class="article-content">{{ object.content }}</p>
+    </div>
+</article>
+<a class="btn btn-outline-info mb-4" href="{% url 'admissionnews-create' unipk=object.id %}">Add News</a>
+{% for news in newses %}
+<article class="media content-section">
+    <div class="media-body">
+        <li>
+            <a class="article-title" href="{% url 'admissionnews-detail' news.pk %}">{{ news.title }}</a>
+        </li>
+    </div>
+</article>
+{% endfor %}
+{% endblock content %}
