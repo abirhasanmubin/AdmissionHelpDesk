@@ -3,7 +3,7 @@
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'quiz-list' %}">Quiz-List</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'university-list' %}">University-List</a></li>
         <li class="breadcrumb-item active" aria-current="page">{{ object.name }}</li>
     </ol>
 </nav>
@@ -24,7 +24,13 @@
         <p class="article-content">{{ object.content }}</p>
     </div>
 </article>
-    <font size="+2" class="article-title"><b>Department List</b></font></br>
+    <div class="media-body">
+<a class="btn btn-outline-info mb-4" href="{% url 'admissionnews-create' unipk=object.id %}">Add News</a>
+<a class="btn btn-outline-info mb-4" href="{% url 'department-create' pk=object.id %}">Add Department</a>
+    </div>
+    {% if object.department_set.count != 0  %}
+    <div class="list-group-item"><font size="+2" class="article-title"><b>Department List</b></font></br></div>
+    {% endif %}
 {% for department in object.department_set.all %}
 <article class="media content-section">
     <div class="media-body">
@@ -34,11 +40,9 @@
     </div>
 </article>
 {% endfor %}
-    <div class="media-body">
-<a class="btn btn-outline-info mb-4" href="{% url 'admissionnews-create' unipk=object.id %}">Add News</a>
-<a class="btn btn-outline-info mb-4" href="{% url 'department-create' pk=object.id %}">Add Department</a>
-    </div>
-    <font size="+1" class="article-title"><b>Admission Newses</b></font></br>
+    {% if newses.count != 0  %}
+    <div class="list-group-item"><font size="+2" class="article-title"><b>Admission Newses</b></font></br></div>
+    {% endif %}
 {% for news in newses %}
 <article class="media content-section">
     <div class="media-body">

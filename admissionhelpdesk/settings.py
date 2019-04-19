@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'admissionnews.apps.AdmissionnewsConfig',
     'modeltest.apps.ModeltestConfig',
     'users.apps.UsersConfig',
+    'eventcalendar.apps.EventcalendarConfig',
     'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
