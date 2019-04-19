@@ -5,7 +5,7 @@
     <img class="rounded-circle article-img" src="{{ object.university.logo.url }}">
     <div class="media-body">
         <div class="article-metadata">
-            <a class="mr-2" href="#">{{ object.university.name }}</a>
+            <a class="mr-2" href="{% url 'university-detail' object.university.pk %}">{{ object.university.name }}</a>
             {% if user.is_superuser %}
             <div>
                 <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'admissionnews-update' object.id %}">Update</a>
@@ -34,7 +34,7 @@
             </div>
             {% endif %}
         </div>
-        <p class="article-content">{{ comment.text }}</p>
+        <p class="article-content">{{ comment.comment }}</p>
     </div>
 </article>
 </font>
