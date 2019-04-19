@@ -9,7 +9,10 @@ from .views import(
     AdmissionNewsDetailView, AdmissionNewsUpdateView,
     AdmissionNewsListView,
 
-    CommentCreateView, CommentUpdateView, CommentDeleteView
+    CommentCreateView, CommentUpdateView, CommentDeleteView,
+
+    DepartmentCreateView, DepartmentDeleteView, DepartmentDetailView,
+    DepartmentUpdateView
 
 
 )
@@ -25,7 +28,10 @@ urlpatterns = [
     path('university/<int:pk>/delete/', UniversityDeleteView.as_view(),
          name="university-delete"),
     #
-    #
+    path('university/<int:pk>/new/', DepartmentCreateView.as_view(),name="department-create"),
+    path('department/<int:pk>/', DepartmentDetailView.as_view(),name="department-detail"),
+    path('department/<int:pk>/update/', DepartmentUpdateView.as_view(),name="department-update"),
+    path('department/<int:pk>/delete/', DepartmentDeleteView.as_view(),name="department-delete"),
     #
     path('university/<int:unipk>/new/', AdmissionNewsCreateView.as_view(),
          name="admissionnews-create"),

@@ -1,5 +1,12 @@
 {% extends "home/base.html" %}
 {% block content %}
+<nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'quiz-list' %}">Quiz-List</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'quiz-detail' object.question.quiz.pk %}">{{ object.quiz.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ object.question.text }}</li>
+        </ol>
+</nav>
 <article class="media content-section">
     <img class="rounded-circle article-img" src="{{ object.user.profile.image.url }}">
     <div class="media-body">

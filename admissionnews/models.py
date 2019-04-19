@@ -39,6 +39,16 @@ class University(models.Model):
             img.thumbnail(output_size)
             img.save(self.logo.path)
 
+class Department(models.Model):
+    university = models.ForeignKey(University, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('department-detail', kwargs={'pk': self.pk})
+
 
 class AdmissionNews(models.Model):
     title = models.CharField(max_length=512, default='')

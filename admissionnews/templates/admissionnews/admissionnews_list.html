@@ -1,5 +1,12 @@
 {% extends "home/base.html" %}
 {% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'university-list' %}">University-List</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'quiz-list' %}">{{  }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ object.name }}</li>
+    </ol>
+</nav>
 {% for admissionnews in admissionnewses %}
 <article class="media content-section">
     <img class="rounded-circle article-img" src="{{ admissionnews.university.logo.url }}">

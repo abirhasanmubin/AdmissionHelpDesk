@@ -1,5 +1,14 @@
 {% extends "home/base.html" %}
 {% block content %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">University-List</li>
+    </ol>
+</nav>
+
+<a class="btn btn-outline-info mb-4" href="{% url 'university-create' %}">Add University Entry</a>
+
 {% for university in universities %}
 <article class="media content-section">
     <img class="rounded-circle article-img" src="{{ university.logo.url }}">

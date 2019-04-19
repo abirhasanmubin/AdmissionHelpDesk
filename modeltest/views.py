@@ -1,4 +1,7 @@
+from time import timezone
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.forms import inlineformset_factory
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
@@ -6,6 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.urls import reverse, reverse_lazy
 from pprint import pprint
+from datetime import datetime
 from django.views.generic import (
     ListView,
     DetailView,
@@ -54,20 +58,20 @@ class QuizCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
 
     def test_func(self):
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
 
 class QuizUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Quiz
-    fields = ['title', 'description', 'starttime', 'duration']
+    form_class = QuizCreateForm
 
     def form_valid(self, form):
         return super().form_valid(form)
 
     def test_func(self):
         obj =self.get_object()
-        if self.request.user.is_superuser or obj.user==self.request.user:
+        if self.request.user.is_superuser or self.request.user.is_staff or obj.user==self.request.user:
             return True
         return False
 
@@ -77,7 +81,7 @@ class QuizDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         obj =self.get_object()
-        if self.request.user.is_superuser or obj.user==self.request.user:
+        if self.request.user.is_superuser or self.request.user.is_staff or obj.user==self.request.user:
             return True
         return False
 
@@ -90,7 +94,7 @@ class QuestionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
 
     def test_func(self):
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
 
@@ -103,7 +107,7 @@ class QuestionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         obj = self.get_object()
-        if self.request.user.is_superuser or obj.user==self.request.user:
+        if self.request.user.is_superuser or self.request.user.is_staff or obj.quiz.user==self.request.user:
             return True
         return False
 
@@ -112,7 +116,7 @@ class QuestionDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         obj = self.get_object()
-        if self.request.user.is_superuser or obj.user==self.request.user:
+        if self.request.user.is_superuser or self.request.user.is_staff or obj.quiz.user==self.request.user:
             return True
         return False
 
@@ -147,7 +151,7 @@ class AnswerCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
 
     def test_func(self):
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
 
@@ -159,7 +163,8 @@ class AnswerUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return super().form_valid(form)
 
     def test_func(self):
-        if self.request.user.is_superuser:
+        ob = self.get_object()
+        if self.request.user.is_superuser or self.request.user.is_staff or ob.question.quiz.user==self.request.user:
             return True
         return False
 
@@ -178,13 +183,11 @@ class AnswerDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 class AnswerDetailView(LoginRequiredMixin, DetailView):
     model = Answer
 
+@login_required
 def Question_Change(request, quiz_pk, question_pk):
-    # Simlar to the `question_add` view, this view is also managing
-    # the permissions at object-level. By querying both `quiz` and
-    # `question` we are making sure only the owner of the quiz can
-    # change its details and also only questions that belongs to this
-    # specific quiz can be changed via this url (in cases where the
-    # user might have forged/player with the url params.
+    if not request.user.is_superuser or not request.user.is_staff:
+        return render(request, 'admissionnews/forbidden.html')
+
     quiz = get_object_or_404(Quiz, pk=quiz_pk, user=request.user)
     question = get_object_or_404(Question, pk=question_pk, quiz=quiz)
 
@@ -229,10 +232,35 @@ class TakenQuizListView(ListView):
         queryset = self.request.user.student.taken_quizes.all()
         return queryset
 
+def get_time(end, start):
+    t1 = end.hour*60+end.minute
+    t2 = start.hour*60+start.minute
+    return t1-t2
 
+class TakenExamListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = TakenQuiz
+
+
+
+@login_required
 def take_quiz(request, pk):
     quiz = get_object_or_404(Quiz, pk=pk)
     student = request.user.student
+    date = datetime.now().strftime('%d:%m:%Y')
+    t_date = quiz.date.strftime('%d:%m:%Y')
+    t_now = datetime.now()
+    now = datetime.now().strftime('%H:%M')
+    start = quiz.start_time.strftime('%H:%M')
+    t_start = quiz.start_time
+    end = quiz.end_time.strftime('%H:%M')
+    t_end = quiz.end_time
+
+    if t_date==date:
+        if start>now:
+            return render(request, 'modeltest/no_exam.html')
+        if end<=now:
+            return render(request, 'modeltest/no_exam.html')
+
 
     if student.quizes.filter(pk=pk).exists():
         return render(request, 'modeltest/taken_quiz.html')
@@ -240,10 +268,17 @@ def take_quiz(request, pk):
     total_questions = quiz.question_set.count()
     unanswered_questions = student.get_unanswered_questions(quiz)
     total_unanswered_questions = unanswered_questions.count()
-    progress = 100 - round(((total_unanswered_questions - 1) / total_questions) * 100)
+
+    progress = 100 - (get_time(t_end, t_now)/get_time(t_end, t_start)) * 100
     question = unanswered_questions.first()
 
     if request.method == 'POST':
+        if t_date == date:
+            if start > now:
+                return render(request, 'modeltest/no_exam.html')
+            if end <= now:
+                return render(request, 'modeltest/no_exam.html')
+
         form = TakeQuizForm(question=question, data=request.POST)
         if form.is_valid():
             with transaction.atomic():
@@ -255,7 +290,6 @@ def take_quiz(request, pk):
                 else:
                     correct_answers = student.quiz_answers.filter(answer__question__quiz=quiz, answer__is_correct=True).count()
                     score = round((correct_answers / total_questions) * 100.0, 2)
-                    # score = correct_answers
                     TakenQuiz.objects.create(user=student, quiz=quiz, score=score)
                     if score < 40.0:
                         messages.warning(request, 'Better luck next time! Your score for the quiz %s was %s.' % (quiz.title, score))

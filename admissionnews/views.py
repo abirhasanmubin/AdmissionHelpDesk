@@ -14,7 +14,7 @@ from django.views.generic import (
 )
 from django.views.generic.edit import FormMixin
 
-from .models import University, AdmissionNews, Comment
+from .models import University, AdmissionNews, Comment, Department
 from .forms import CommentForm
 
 
@@ -51,7 +51,7 @@ class UniversityCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
 
     def test_func(self):
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
 
@@ -74,7 +74,7 @@ class UniversityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class UniversityDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     model = University
-    success_url = 'university-list'
+
 
     def test_func(self):
         uni = self.get_object()
@@ -83,8 +83,50 @@ class UniversityDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             return True
         return False
 
-"""
-"""
+    def get_success_url(self):
+        return reverse('university-list')
+
+class DepartmentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Department
+    fields = ['name']
+
+    def form_valid(self, form):
+        form.instance.university = University.objects.filter(pk=self.kwargs.get('pk')).first()
+        return super().form_valid(form)
+
+    def test_func(self):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return True
+        return False
+
+class DepartmentDetailView(DetailView):
+    model =Department
+
+class DepartmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Department
+    fields = ['name']
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+
+    def test_func(self):
+        obj = self.get_object()
+        if self.request.user.is_superuser or self.request.user==obj.university.user:
+            return True
+        return False
+
+class DepartmentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Department
+
+    def get_success_url(self):
+        return reverse('university-detail', kwargs={'pk':self.object.university.pk})
+
+    def test_func(self):
+        obj = self.get_object()
+        if self.request.user.is_superuser or self.request.user==obj.university.user:
+            return True
+        return False
+
 
 class AdmissionNewsListView(ListView):
     model = AdmissionNews
@@ -133,7 +175,7 @@ class AdmissionNewsCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateVie
         return super().form_valid(form)
 
     def test_func(self):
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
 
@@ -183,7 +225,7 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         obj = self.get_object()
 
-        if self.request.user==obj.user:
+        if self.request.user==obj.user or self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
 
@@ -196,6 +238,6 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         obj = self.get_object()
 
-        if self.request.user==obj.user:
+        if self.request.user==obj.user or self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
