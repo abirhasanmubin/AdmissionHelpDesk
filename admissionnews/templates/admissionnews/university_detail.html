@@ -13,7 +13,8 @@
     <div class="media-body">
         <div class="article-metadata">
             <a class="mr-2" href="#">{{ object.university_type }}</a>
-            {% if object.user == user %}
+        <a href="{{ university.website }}">Official Website</a>
+            {% if user.is_staff or user.is_superuser %}
             <div>
                 <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'university-update' object.id %}">Update</a>
                 <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'university-delete' object.id %}">Delete</a>
@@ -24,10 +25,12 @@
         <p class="article-content">{{ object.content }}</p>
     </div>
 </article>
+    {% if user.is_staff or user.is_superuser %}
     <div class="media-body">
 <a class="btn btn-outline-info mb-4" href="{% url 'admissionnews-create' unipk=object.id %}">Add News</a>
 <a class="btn btn-outline-info mb-4" href="{% url 'department-create' pk=object.id %}">Add Department</a>
     </div>
+    {% endif %}
     {% if object.department_set.count != 0  %}
     <div class="list-group-item"><font size="+2" class="article-title"><b>Department List</b></font></br></div>
     {% endif %}

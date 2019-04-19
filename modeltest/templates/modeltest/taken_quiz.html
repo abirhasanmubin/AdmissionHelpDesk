@@ -13,7 +13,7 @@
         {% for taken_quiz in request.user.student.taken_quizes.all %}
           <tr>
             <td>{{ taken_quiz.quiz.title }}</td>
-            <td>{{ taken_quiz.score }}</td>
+            <td>{{ taken_quiz.score }}/{{ taken_quiz.quiz.question_set.count }}</td>
           </tr>
         {% empty %}
           <tr>

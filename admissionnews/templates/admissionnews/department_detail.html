@@ -13,7 +13,7 @@
     <img class="rounded-circle article-img" src="{{ object.university.logo.url }}">
     <div class="media-body">
         <div class="article-metadata">
-            <a class="mr-2" href="#">{{ object.university.name }}</a>
+            <a class="mr-2" href="{% url 'university-detail' object.university.pk %}">{{ object.university.name }}</a>
             {% if object.university.user == user %}
             <div>
                 <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'department-update' object.id %}">Update</a>
@@ -24,7 +24,9 @@
         <h2 class="article-title">{{ object.name }}</h2>
     </div>
 </article>
+    {% if user.is_staff or user.is_superuser %}
 <a class="btn btn-outline-info mb-4" href="{% url 'admissionnews-create' unipk=object.university.pk %}">Add News</a>
+    {% endif %}
 {% for news in object.university.admissionnews_set.all %}
 <article class="media content-section">
     <div class="media-body">

@@ -66,7 +66,7 @@ class UniversityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         obj =self.get_object()
-        if self.request.user.is_superuser or obj.user==self.request.user:
+        if self.request.user.is_superuser or obj.user==self.request.user or self.request.user.is_staff:
             return True
         return False
 
@@ -79,7 +79,7 @@ class UniversityDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         uni = self.get_object()
 
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
 
@@ -111,7 +111,7 @@ class DepartmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         obj = self.get_object()
-        if self.request.user.is_superuser or self.request.user==obj.university.user:
+        if self.request.user.is_staff or self.request.user.is_superuser or self.request.user==obj.university.user:
             return True
         return False
 
@@ -123,7 +123,7 @@ class DepartmentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         obj = self.get_object()
-        if self.request.user.is_superuser or self.request.user==obj.university.user:
+        if self.request.user.is_staff or self.request.user.is_superuser or self.request.user==obj.university.user:
             return True
         return False
 
@@ -187,7 +187,7 @@ class AdmissionNewsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVie
         return super().form_valid(form)
 
     def test_func(self):
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
 
@@ -197,7 +197,7 @@ class AdmissionNewsDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteVie
     success_url = 'university-list'
 
     def test_func(self):
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
 

@@ -29,15 +29,10 @@ from .models import Quiz, TakenQuiz, Question, Answer, StudentAnswer, Student
 
 class QuizListView(LoginRequiredMixin, ListView):
     model = Quiz
-
     context_object_name = 'quizes'
+    paginate_by = 10
+    order_by = ['-date', '-start_time']
 
-
-    def test_func(self):
-        if self.request.user.is_superuser:
-            return True
-        else:
-            return False
 
 class QuizDetailView(LoginRequiredMixin, DetailView):
     model = Quiz
@@ -52,6 +47,9 @@ class QuizDetailView(LoginRequiredMixin, DetailView):
 class QuizCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Quiz
     form_class = QuizCreateForm
+
+    def get_success_url(self):
+        return reverse('quiz-detail', kwargs={'pk': self.object.pk})
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -77,7 +75,9 @@ class QuizUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class QuizDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Quiz
-    success_url = 'quiz-list'
+
+    def get_success_url(self):
+        return reverse('quiz-list')
 
     def test_func(self):
         obj =self.get_object()
@@ -98,6 +98,9 @@ class QuestionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
             return True
         return False
 
+    def get_success_url(self):
+        return reverse('question-detail', kwargs={'question_pk': self.object.pk, 'quiz_pk': self.object.quiz.pk})
+
 class QuestionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Question
     fields = ['text']
@@ -111,17 +114,6 @@ class QuestionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             return True
         return False
 
-class QuestionDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Question
-
-    def test_func(self):
-        obj = self.get_object()
-        if self.request.user.is_superuser or self.request.user.is_staff or obj.quiz.user==self.request.user:
-            return True
-        return False
-
-    def get_success_url(self):
-        return reverse_lazy('quiz-detail', args=(self.object.quiz.pk))
 
 class QuestionListView(LoginRequiredMixin, ListView):
     model = Question
@@ -140,6 +132,17 @@ class QuestionDetailView(LoginRequiredMixin, DetailView):
         question = Question.objects.filter(pk=self.kwargs.get('pk'))[0]
         context['answers'] = Answer.objects.filter(question=question)
         return context
+
+class QuestionDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Question
+
+    def test_func(self):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return True
+        return False
+
+    def get_success_url(self):
+        return reverse('quiz-detail', kwargs={'pk':self.object.quiz.pk})
 
 
 class AnswerCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -173,7 +176,7 @@ class AnswerDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
     def test_func(self):
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.is_staff:
             return True
         return False
 
@@ -185,7 +188,7 @@ class AnswerDetailView(LoginRequiredMixin, DetailView):
 
 @login_required
 def Question_Change(request, quiz_pk, question_pk):
-    if not request.user.is_superuser or not request.user.is_staff:
+    if not request.user.is_staff and not request.user.is_superuser:
         return render(request, 'admissionnews/forbidden.html')
 
     quiz = get_object_or_404(Quiz, pk=quiz_pk, user=request.user)
@@ -229,7 +232,8 @@ class TakenQuizListView(ListView):
     template_name = 'modeltest/taken_quiz.html'
 
     def get_queryset(self):
-        queryset = self.request.user.student.taken_quizes.all()
+        quiz = Quiz.objects.filter(pk=self.kwargs.get('pk'))
+        queryset = TakenQuiz.objects.values()
         return queryset
 
 def get_time(end, start):
@@ -237,8 +241,20 @@ def get_time(end, start):
     t2 = start.hour*60+start.minute
     return t1-t2
 
+
 class TakenExamListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    model = TakenQuiz
+    model = Quiz
+    context_object_name = 'taken_list'
+
+    def get_queryset(self):
+        queryset = self.request.user.student.taken_quizzes \
+            .order_by('quiz__name')
+        return queryset
+
+    def test_func(self):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return True
+        return False
 
 
 
@@ -255,12 +271,15 @@ def take_quiz(request, pk):
     end = quiz.end_time.strftime('%H:%M')
     t_end = quiz.end_time
 
+    if t_date<date:
+        return render(request, 'modeltest/ended.html')
     if t_date==date:
         if start>now:
-            return render(request, 'modeltest/no_exam.html')
-        if end<=now:
-            return render(request, 'modeltest/no_exam.html')
-
+            return render(request, 'modeltest/upcoming.html')
+        if end<now:
+            return render(request, 'modeltest/ended.html')
+    if t_date>date and now>end:
+        return render(request, 'modeltest/upcoming.html')
 
     if student.quizes.filter(pk=pk).exists():
         return render(request, 'modeltest/taken_quiz.html')
@@ -275,9 +294,9 @@ def take_quiz(request, pk):
     if request.method == 'POST':
         if t_date == date:
             if start > now:
-                return render(request, 'modeltest/no_exam.html')
+                return render(request, 'modeltest/ended.html')
             if end <= now:
-                return render(request, 'modeltest/no_exam.html')
+                return render(request, 'modeltest/ended.html')
 
         form = TakeQuizForm(question=question, data=request.POST)
         if form.is_valid():
@@ -289,12 +308,13 @@ def take_quiz(request, pk):
                     return redirect('take-quiz', pk)
                 else:
                     correct_answers = student.quiz_answers.filter(answer__question__quiz=quiz, answer__is_correct=True).count()
-                    score = round((correct_answers / total_questions) * 100.0, 2)
+                    score = correct_answers
+                    score_p = round((correct_answers / total_questions) * 100.0, 2)
                     TakenQuiz.objects.create(user=student, quiz=quiz, score=score)
-                    if score < 40.0:
-                        messages.warning(request, 'Better luck next time! Your score for the quiz %s was %s.' % (quiz.title, score))
+                    if score_p < 40.0:
+                        messages.warning(request, 'Better luck next time! Your score for the quiz %s was %s points out of %s points.' % (quiz.title, score, quiz.question_set.count()))
                     else:
-                        messages.success(request, 'Congratulations! You completed the quiz %s with success! You scored %s points.' % (quiz.title, score))
+                        messages.success(request, 'Congratulations! You completed the quiz %s with success! You scored %s points out of %s points.' % (quiz.title, score, quiz.question_set.count()))
                     return redirect('quiz-list')
     else:
         form = TakeQuizForm(question=question)

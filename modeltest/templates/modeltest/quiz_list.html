@@ -1,5 +1,15 @@
 {% extends "home/base.html" %}
 {% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+
+        <li class="breadcrumb-item active" aria-current="page">Quiz-List</li>
+    </ol>
+</nav>
+{% if user.is_superuser or user.is_staff %}
+    <a class="btn btn-outline-info mb-3" href="{% url 'quiz-create' %}">Add Modeltest</a>
+{% endif %}
+
 {% for quiz in quizes %}
 <article class="media content-section">
     <img class="rounded-circle article-img" src="{{ quiz.user.profile.image.url }}">
@@ -7,7 +17,7 @@
         <div class="article-metadata">
 
         </div>
-        {% if user.is_superuser %}
+        {% if user.is_superuser or user.is_staff %}
             <a href="{% url 'quiz-detail' quiz.pk %}"><h2 class="article-title outline-info">{{ quiz.title }}</h2></a>
         {% else %}
             <a href="{% url 'take-quiz' quiz.pk %}"><h2 class="article-title outline-info">{{ quiz.title }}</h2></a>

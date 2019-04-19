@@ -6,8 +6,9 @@
         <li class="breadcrumb-item active" aria-current="page">University-List</li>
     </ol>
 </nav>
-
+{% if user.is_superuser or user.is_staff %}
 <a class="btn btn-outline-info mb-4" href="{% url 'university-create' %}">Add University Entry</a>
+    {% endif %}
 
 {% for university in universities %}
 <article class="media content-section">

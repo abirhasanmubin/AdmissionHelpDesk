@@ -10,10 +10,11 @@
     <img class="rounded-circle article-img" src="{{ object.user.profile.image.url }}">
     <div class="media-body">
         <div class="article-metadata">
-            {% if object.user == user %}
+            {% if object.user == user or user.is_staff or user.is_superuser %}
             <div>
                 <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'quiz-update' object.id %}">Update</a>
                 <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'quiz-delete' object.id %}">Delete</a>
+                <a class="btn btn-outline-info btn-sm mt-1 mb-1" href="#">Result</a>
             </div>
             {% endif %}
         </div>
@@ -21,7 +22,7 @@
         <p class="article-content">{{ object.description }}</p>
     </div>
 </article>
-<a class="btn btn-outline-info mb-4" href="{% url 'question-create' pk=object.pk%}">Add Question</a>
+<a class="btn btn-outline-info mb-4" href="{% url 'question-create' pk=object.pk %}">Add Question</a>
 <article class="content-section">
     <div class="media-body">
         <p class="article-title" style="font-size: x-large; color: darkblue">Question Count ==> {{ object.question_set.count }}</p>

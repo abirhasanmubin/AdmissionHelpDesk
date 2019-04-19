@@ -23,8 +23,7 @@ class Quiz(models.Model):
     def __str__(self):
         return self.title
 
-    def get_absolute_url(self):
-        return reverse('quiz-detail', kwargs={'pk': self.pk})
+
 
 
 class Question(models.Model):
@@ -33,9 +32,6 @@ class Question(models.Model):
 
     def __str__(self):
         return self.text
-
-    def get_absolute_url(self):
-        return reverse('question-detail', kwargs={'question_pk': self.pk, 'quiz_pk':self.quiz.pk})
 
 
 class Answer(models.Model):

@@ -5,13 +5,13 @@
 {% block content %}
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'quiz-detail' quiz.pk %}">{{ quiz.name }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'quiz-list' %}">Quiz-List</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'quiz-detail' question.quiz.id %}">{{ question.quiz.title }}</a></li>
         <li class="breadcrumb-item active" aria-current="page">{{ question.text }}</li>
     </ol>
 </nav>
-{% if user.is_superuser %}
+{% if user.is_superuser or user.is_staff %}
 {#<a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'question-update' object.id %}">Update</a>#}
-<a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'question-delete' quiz.pk %}">Delete</a>
 {% endif %}
 <h2 class="mb-3">{{ question.text }}</h2>
 <form method="post" novalidate>
