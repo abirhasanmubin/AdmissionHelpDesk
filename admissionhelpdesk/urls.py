@@ -19,7 +19,6 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from users import views as user_views
-from eventcalendar.views import CalendarView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', user_views.register, name='register'),
@@ -49,7 +48,7 @@ urlpatterns = [
     path('', include('home.urls')),
     path('admissionnews/', include('admissionnews.urls')),
     path('modeltest/', include('modeltest.urls')),
-    path('calendar/', CalendarView.as_view(), name="calendar")
+    path('calendar/', include('eventcalendar.urls')),
 ]
 
 if settings.DEBUG:

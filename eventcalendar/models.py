@@ -1,5 +1,5 @@
 from django.db import models
-
+from admissionnews.models import AdmissionNews
 # Create your models here.
 
 class Event(models.Model):

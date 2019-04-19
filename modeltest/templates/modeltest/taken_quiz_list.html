@@ -11,7 +11,7 @@
       <tbody>
         {% for taken_quiz in taken_list %}
           <tr>
-            <td>{{ taken_quiz.quiz.title }}</td>
+            <td>{{ taken_quiz.user }}</td>
             <td>{{ taken_quiz.score }}/{{ taken_quiz.quiz.question_set.count }}</td>
           </tr>
         {% empty %}

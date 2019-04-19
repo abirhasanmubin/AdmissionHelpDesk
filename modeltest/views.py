@@ -245,10 +245,11 @@ def get_time(end, start):
 class TakenExamListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Quiz
     context_object_name = 'taken_list'
+    template_name = 'modeltest/taken_quiz_list.html'
 
     def get_queryset(self):
-        queryset = self.request.user.student.taken_quizzes \
-            .order_by('quiz__name')
+        quiz = Quiz.objects.filter(pk=self.kwargs.get('pk')).first()
+        queryset = TakenQuiz.objects.filter(quiz=quiz).all()
         return queryset
 
     def test_func(self):
