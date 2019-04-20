@@ -186,7 +186,7 @@ class AdmissionNewsCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateVie
 
 class AdmissionNewsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = AdmissionNews
-    fields = ['title', 'news']
+    form_class = AdmissionNewsCreateForm
 
     def form_valid(self, form):
         return super().form_valid(form)
@@ -199,7 +199,9 @@ class AdmissionNewsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVie
 
 class AdmissionNewsDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = AdmissionNews
-    success_url = 'university-list'
+
+    def get_success_url(self):
+        return reverse('university-detail', kwargs={'pk':self.object.university.pk})
 
     def test_func(self):
         if self.request.user.is_superuser or self.request.user.is_staff:

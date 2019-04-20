@@ -31,7 +31,7 @@ class QuizListView(LoginRequiredMixin, ListView):
     model = Quiz
     context_object_name = 'quizes'
     paginate_by = 10
-    order_by = ['-date', '-start_time']
+    ordering = ['-date', 'start_time']
 
 
 class QuizDetailView(LoginRequiredMixin, DetailView):
@@ -191,7 +191,7 @@ def Question_Change(request, quiz_pk, question_pk):
     if not request.user.is_staff and not request.user.is_superuser:
         return render(request, 'admissionnews/forbidden.html')
 
-    quiz = get_object_or_404(Quiz, pk=quiz_pk, user=request.user)
+    quiz = get_object_or_404(Quiz, pk=quiz_pk)
     question = get_object_or_404(Question, pk=question_pk, quiz=quiz)
 
     AnswerFormSet = inlineformset_factory(
