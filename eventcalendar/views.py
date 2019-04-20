@@ -9,13 +9,24 @@ import calendar
 from .models import *
 from .utils import Calendar
 from .forms import EventForm
+from admissionnews.models import AdmissionNews
+
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+    FormView
+)
 
 def index(request):
     return HttpResponse('hello')
 
 class CalendarView(generic.ListView):
     model = Event
-    template_name = 'eventcalander/calendar.html'
+    template_name = 'eventcalendar/calendar.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -58,4 +69,16 @@ def event(request, event_id=None):
     if request.POST and form.is_valid():
         form.save()
         return HttpResponseRedirect(reverse('calendar'))
-    return render(request, 'eventcalander/event.html', {'form': form})
+    return render(request, 'eventcalendar/event.html', {'form': form})
+
+class EventCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Event
+    success_url = 'calendar'
+    form_class = EventForm
+    # template_name = 'eventcalendar/event.html'
+
+    def test_func(self):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return True
+        return False
+

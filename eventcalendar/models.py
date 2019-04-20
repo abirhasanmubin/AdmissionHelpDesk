@@ -7,3 +7,5 @@ class Event(models.Model):
     description = models.TextField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    admissionnews = models.ForeignKey(AdmissionNews, on_delete=models.CASCADE)
+

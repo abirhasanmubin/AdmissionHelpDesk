@@ -33,6 +33,7 @@
                         <a class="nav-item nav-link" href="{% url 'university-list' %}">Universities</a>
                         <a class="nav-item nav-link" href="{% url 'admissionnews-list' %}">Admission News</a>
                         <a class="nav-item nav-link" href="{% url 'quiz-list' %}">Model Tests</a>
+                        <a class="nav-item nav-link" href="{% url 'calendar' %}">Calendar</a>
                         {% if user.is_superuser %}
                         <a class="nav-item nav-link" href="/admin">Admin Page</a>
                         {% endif %}

@@ -9,7 +9,9 @@
 {% if user.is_superuser or user.is_staff %}
     <a class="btn btn-outline-info mb-3" href="{% url 'quiz-create' %}">Add Modeltest</a>
 {% endif %}
-
+<div class="media-body">
+        <p class="article-title" style="font-size: x-large; color: darkblue">Total Quizes ==> {{ quizes.count }}</p>
+</div>
 {% for quiz in quizes %}
 <article class="media content-section">
     <img class="rounded-circle article-img" src="{{ quiz.user.profile.image.url }}">

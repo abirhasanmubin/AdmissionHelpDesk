@@ -1,5 +1,6 @@
 from django.forms import ModelForm, DateInput
 from .models import Event
+from admissionnews.models import AdmissionNews
 
 class EventForm(ModelForm):
   class Meta:

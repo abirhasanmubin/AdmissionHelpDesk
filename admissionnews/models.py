@@ -55,6 +55,8 @@ class AdmissionNews(models.Model):
     news = models.TextField(default='')
     university = models.ForeignKey(University, on_delete=models.CASCADE)
     date_posted = models.DateTimeField(default=timezone.now)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
 
     def __str__(self):
         return self.title

@@ -14,8 +14,9 @@ from django.views.generic import (
 )
 from django.views.generic.edit import FormMixin
 
+from eventcalendar.models import Event
 from .models import University, AdmissionNews, Comment, Department
-from .forms import CommentForm
+from .forms import CommentForm, AdmissionNewsCreateForm
 
 
 # Create your views here.
@@ -144,6 +145,11 @@ class AdmissionNewsDetailView(FormMixin, DetailView):
         context = super(AdmissionNewsDetailView, self).get_context_data(**kwargs)
         context['form'] = self.get_form()
         post = AdmissionNews.objects.filter(pk=self.kwargs.get('pk'))[0]
+        title = post.title
+        description = post.news
+        start_time = post.start_time
+        end_time = post.end_time
+        Event.objects.get_or_create(title=title, description=description, start_time=start_time, end_time=end_time, admissionnews=post)
         context['comments'] = Comment.objects.filter(post=post).order_by('-date_commented')
         return context
 
@@ -166,10 +172,9 @@ class AdmissionNewsDetailView(FormMixin, DetailView):
 
 class AdmissionNewsCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = AdmissionNews
-    fields = ['title', 'news']
+    form_class = AdmissionNewsCreateForm
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
         form.instance.university = University.objects.filter(
             pk=self.kwargs.get('unipk')).first()
         return super().form_valid(form)
