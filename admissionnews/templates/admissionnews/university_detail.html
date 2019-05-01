@@ -27,7 +27,7 @@
 </article>
     {% if user.is_staff or user.is_superuser %}
     <div class="media-body">
-<a class="btn btn-outline-info mb-4" href="{% url 'admissionnews-create' unipk=object.id %}">Add News</a>
+<a class="btn btn-outline-info mb-4" href="{% url 'admissionnews-create' unipk=object.id %}">Add Admission News</a>
 <a class="btn btn-outline-info mb-4" href="{% url 'department-create' pk=object.id %}">Add Department</a>
     </div>
     {% endif %}

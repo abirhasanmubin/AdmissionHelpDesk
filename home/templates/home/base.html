@@ -32,8 +32,8 @@
                     <div class="navbar-nav mr-auto">
                         <a class="nav-item nav-link" href="{% url 'university-list' %}">Universities</a>
                         <a class="nav-item nav-link" href="{% url 'admissionnews-list' %}">Admission News</a>
-                        <a class="nav-item nav-link" href="{% url 'quiz-list' %}">Model Tests</a>
                         <a class="nav-item nav-link" href="{% url 'calendar' %}">Calendar</a>
+                        <a class="nav-item nav-link" href="{% url 'quiz-list' %}">Model Tests</a>
                         {% if user.is_superuser %}
                         <a class="nav-item nav-link" href="/admin">Admin Page</a>
                         {% endif %}
@@ -43,8 +43,10 @@
                     </div>
                     <!-- Navbar Right Side -->
                     <div class="navbar-nav">
-                        {% if user.is_superuser or user.is_staff %}
+                        {% if user.is_superuser %}
                         <a class="nav-item nav-link" href="{% url 'university-create' %}">New University</a>
+                        {% endif %}
+                        {% if user.is_superuser or user.is_staff %}
                         <a class="nav-item nav-link" href="{% url 'quiz-create' %}">New Modeltest</a>
                         {% endif %}
                         {% if user.is_authenticated %}

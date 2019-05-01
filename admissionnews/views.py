@@ -52,7 +52,7 @@ class UniversityCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
 
     def test_func(self):
-        if self.request.user.is_superuser or self.request.user.is_staff:
+        if self.request.user.is_superuser:
             return True
         return False
 
@@ -67,7 +67,7 @@ class UniversityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         obj =self.get_object()
-        if self.request.user.is_superuser or obj.user==self.request.user or self.request.user.is_staff:
+        if self.request.user.is_superuser or obj.user==self.request.user:
             return True
         return False
 
@@ -80,7 +80,7 @@ class UniversityDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         uni = self.get_object()
 
-        if self.request.user.is_superuser or self.request.user.is_staff:
+        if self.request.user.is_superuser:
             return True
         return False
 

@@ -25,7 +25,7 @@
     </div>
 </article>
     {% if user.is_staff or user.is_superuser %}
-<a class="btn btn-outline-info mb-4" href="{% url 'admissionnews-create' unipk=object.university.pk %}">Add News</a>
+<a class="btn btn-outline-info mb-4" href="{% url 'admissionnews-create' unipk=object.university.pk %}">Add Admission News</a>
     {% endif %}
 {% for news in object.university.admissionnews_set.all %}
 <article class="media content-section">
